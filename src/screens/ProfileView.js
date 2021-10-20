@@ -9,19 +9,29 @@ import { useFocusEffect } from '@react-navigation/native';
 
 
 
-const ProfileView = () => {
+const ProfileView = ({navigation}) => {
 	//this user alternative is to pull from dummy data to display a profile
 	//   const user = USERS[0];
   //line 14 might not be enough. It used to work, but now, when we open the app, it initially doesn't (async authorization?). If you comment out all calls to user and then comment it back in it suddenly works. Except there must be another layert of access to get to user features not included in auth. pronouns, bio, interests (again, used to work :( ))
-	const [userData, setUserData] = useState([])
+  function handleRedirectToSignin() {
+    if(auth.currentUser == null) {
+      history.push('Login');
+    }
+    return null;
+  }
 
-  useFocusEffect(
+  const userEmail =
+    auth.currentUser.email.slice(0, 1).toUpperCase() + auth.currentUser.email.slice(1);
+    console.log('this', userEmail);
+
+  useEffect(
     React.useCallback(() => {
-    console.log('usefocus triggered2');
+    console.log("effect triggered");
     const unsubscribe = () => {
       db.collection('Users')
-      .where('email', ''=='', auth.currentUser.email)
+      .where('email', '==', userEmail)
         .onSnapshot((snapshot)=> {
+          snapshot.docs.map(doc=> console.log("doc data", doc.data()))
           setUserData(snapshot.docs.map(doc=> ({
             id: doc.id,
             data: doc.data(),
@@ -32,6 +42,11 @@ const ProfileView = () => {
    }, [])
    );
 
+   const [userData, setUserData] = useState([])
+  console.log("This is User data", userData)
+  // console.log(auth.currentUser.email)
+
+
 
   const logOutUser = () => {
     auth.signOut().then(()=>{
@@ -41,7 +56,7 @@ const ProfileView = () => {
 
   return (
     <View style={styles.profileView}>
-		<Text style={styles.profileName}>Hello, {userData.displayName}! </Text>
+		{/* <Text style={styles.profileName}>Hello, {userData.displayName}! </Text>
 
 		<>
         <Text style={{ fontWeight: 'bold', marginBottom: 10 }}>({userData.pronouns})</Text>
@@ -49,20 +64,20 @@ const ProfileView = () => {
       <Image source={{ uri: userData.photoURL }} style={styles.profileImage} />
       <>
         <Text style={{ fontWeight: 'bold' }}>About You:</Text>
-        <Text>{userData.bio} </Text>
-      </>
+        <Text>{userData.bio} </Text> */}
+      {/* </> */}
 	{/*the majority of our database users do not have location information, so if I call name from this array, it does not work. For now, I don't think there's a workaround for displaying location name*/}
     {/* <Text style={{ fontWeight: 'bold' }}>Your Location: </Text> */}
     {/* <Text>{currentUser.location.name} </Text> */}
 
       <Text style={{ fontWeight: 'bold' }}>Your Interests: </Text>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+      {/* <ScrollView horizontal showsHorizontalScrollIndicator={false}>
         {userData.interests.map((interest, index) => (
           <View key={index} style={{ alignItems: 'center' }}>
             <Text style={{ color: '#1f142e' }}>{interest}, </Text>
           </View>
         ))}
-      </ScrollView>
+      </ScrollView> */}
       <Button buttonStyle={styles.button} title="Log Out" onPress={logOutUser} />
     </View>
   );
